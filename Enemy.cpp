@@ -98,7 +98,7 @@ void Enemy::enemyMove() {
 			allowdistance = 1100 - crood_x;
 			lor = 1;
 			break;
-		}//上下左右的最大距离
+		}  //上下左右的最大距离
 		if (allowdistance == 0) {
 			continue;
 		}
@@ -183,8 +183,8 @@ void Enemy::enemyMove() {
 
 			//刷新位置
 			window_.display();
-			Sleep(5);
-			window_.clear();
+			//Sleep(1);
+		    //window_.clear();
 
 			// 互斥锁
 			window_.setActive(false);
