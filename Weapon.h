@@ -8,7 +8,7 @@ private:
     double bullet_delay{ 0.2 };  //子弹每发间隔
     int range{ 800 };            //子弹射程
     sf::Vector2f point{ 500, 500 };
-
+	////
     sf::Texture t1, t2, t3;
     sf::Sprite bullet;
 
