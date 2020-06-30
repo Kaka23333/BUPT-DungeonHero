@@ -13,7 +13,7 @@
 RenderWindow window_;
 Mutex myMutex;
 std::deque<Bullet> bullets{};  //×Óµ¯
-std::vector<eBullet> ebullets{};
+std::vector<eBullet> ebullets{};///////////////////////////////´ó×Óµ¯
 
 using namespace sf;
 
