@@ -3,7 +3,9 @@
 
 class Bullet {
 public:
-    sf::Vector2f xy{ 0, 0 };  //射出点坐标
-    sf::Vector2f direction{ 0, 0 };
-    sf::Vector2f coord{ 0, 0 };  //射出点坐标
+	int x;
+	int y;
+	sf::Vector2f direction{ 0, 0 };
+	int coord_x;
+	int coord_y;//射出点坐标
 };
