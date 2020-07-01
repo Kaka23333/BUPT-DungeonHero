@@ -215,7 +215,7 @@ void avoidBug(std::string address) {
 
 // 碰撞检测函数
 bool checkCollision(Sprite s1, Sprite s2) {
-  return s1.getLocalBounds().intersects(s2.getLocalBounds());
+  return s1.getGlobalBounds().intersects(s2.getGlobalBounds());
 }
 
 int main() {
@@ -382,10 +382,10 @@ int main() {
           break;
         }
         //检测打击怪物
-        for (int i = 0; i < enemy.size(); i++) {
-          if (enemy[i].getExist()) {
-            if (checkCollision(enemySprite[i], s)) {
-              enemy[i].beHitted(b1.getDamage());
+        for (int j = 0; j < enemy.size(); j++) {
+          if (enemy[j].getExist()) {
+            if (checkCollision(enemySprite[j], s)) {
+              enemy[j].beHitted(b1.getDamage()*20);
               b1.bullets[i].setExist(false);
               break;
             }
@@ -402,7 +402,7 @@ int main() {
     t.loadFromFile("images/bullet4.png");
     ebullet.setTexture(t);
     for (int i = 0; i < enemy.size(); i++) {
-      if (enemy[i].getShoot()) {
+      if (enemy[i].getShoot()&&enemy[i].getExist()) {
 
         for (int j = 0; j < enemy[i].ebullets.size(); j++) {
           if (enemy[i].ebullets[j].getExist()) {
@@ -416,6 +416,10 @@ int main() {
               enemy[i].ebullets[j].setExist(false);
             }
             //检测与人物碰撞
+            if (checkCollision(ebullet, s4)) {
+              h1.beHitted(enemy[i].ebullets[j].damage);
+              enemy[i].ebullets[j].setExist(false);
+            }
 
             if (enemy[i].ebullets[j].getExist()) {
               window.draw(ebullet);
