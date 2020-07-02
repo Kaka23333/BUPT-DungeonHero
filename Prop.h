@@ -1,11 +1,9 @@
 #pragma once
 #include <SFML/Graphics.hpp>
-#include "Block.h"
 #include <list>
 #include <string>
 #include <random>
 #include <queue>
-#include"Counter.h"
 #include"hero.h"
 #include"enemy.h"
 #include"shoot.h"
@@ -16,6 +14,76 @@ bool checkCollision(Sprite s1, Sprite s2);
 //{
 	//return s1.getLocalBounds().intersects(s2.getLocalBounds());
 //}
+
+
+//计数器类
+class Counter {//帧数计数器
+	static int num;
+	int no_;//计数器编号
+	int now{ 0 };//当前为多少帧
+	bool isOver{ 0 };//是否达到上限
+	bool isRunning{ 0 };//是否在计数
+	int limit{ 10 };//上限
+public:
+	Counter();
+	Counter(int lim);
+	int getNow();
+	int getLimit();
+	int getNo_();
+	bool getOver();
+	bool getRun();
+	void add();//计数加1
+	void reset();//计数器归0
+	void shutdown();//关闭计数器
+	void setup();//启用计数器
+	void setLimit(int lim);//重置上限
+};
+
+Counter::Counter() {
+	num++;
+	no_ = num;
+	isRunning = 1;
+}
+Counter::Counter(int lim) {
+	num++;
+	no_ = num;
+	isRunning = 1;
+	limit = lim;
+}
+int Counter::getNow() {
+	return now;
+}
+int Counter::getLimit() {
+	return limit;
+}
+bool Counter::getOver() {
+	return isOver;
+}
+bool Counter::getRun() {
+	return isRunning;
+}
+int Counter::getNo_() {
+	return no_;
+}
+void Counter::add() {//在循环体最末尾执行
+	if (isRunning) {
+		if (now < limit)now++;
+		else reset();
+	}
+}
+void Counter::reset() {
+	now = 0;
+}
+void Counter::shutdown() {
+	isRunning = 0;
+}
+void Counter::setup() {
+	isRunning = 1;
+}
+void Counter::setLimit(int lim) {//重置上限
+	limit = lim;
+}
+
 
 //类
 class Box {//宝箱
@@ -112,8 +180,7 @@ void prop_system_run_data();//道具系统运行:修改数据
 
 
 
-
-
+//变量引入
 //所有extern的变量都要放到main.cpp
 extern Hero h1;//主角的对象
 extern Weapon b1;//武器的对象
@@ -141,6 +208,7 @@ extern sf::Texture bomb_tex;
 extern sf::Texture lvup_tex;
 extern sf::Texture pause_tex;
 extern sf::Texture proplist;//道具栏纹理
+
 
 
 

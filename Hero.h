@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <ctime>
 #include <deque>
 #include <iostream>
@@ -83,14 +84,6 @@ void Hero::update() { //移动
     x += speed;
   if (dir == 0)
     y -= speed;
-  if (x >= windowWidth - 1)
-    isLive = false;
-  if (x < 1)
-    isLive = false;
-  if (y >= windowHeight - 1)
-    isLive = false;
-  if (y < 1)
-    isLive = false;
 }
 void Hero::renderHero() { //调图作画
   heroMutex.lock();
@@ -108,7 +101,6 @@ void Hero::renderHero() { //调图作画
   }
   heroMutex.unlock();
 }
-
 
 void Hero::beHitted(int damage_) {
   HP -= damage_;

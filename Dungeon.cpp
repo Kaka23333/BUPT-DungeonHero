@@ -20,19 +20,15 @@ std::vector<Enemy> enemy{1, 1, 1, 2, 2, 2};
 std::vector<Vector2f> barrier; // 存放障碍物
 Hero h1{200, 200};
 Weapon b1;
-
-// 碰撞检测函数
-bool checkCollision(Sprite s1, Sprite s2) {
-  return s1.getGlobalBounds().intersects(s2.getGlobalBounds());
-}
+Music menuMusic, gameMusic, bossMusic;
 
 class Room {
 private:
   int type;           // 房间类型，共三种
   bool isOpen{false}; // 房间门是否打开
   Mutex roomMutex;
-  Sprite scene;           // 场景贴图
-  Texture block_, scene_; // 边界块
+  Sprite scene, nextDoor, death;             // 场景贴图
+  Texture block_, scene_, nextDoor_, death_; // 边界块
   SoundBuffer buffer1, buffer2, buffer3, buffer4, buffer5, buffer6;
   Sound press, mdeath, bullet_t, bullet_f, mbullet, item1;
 
@@ -41,26 +37,35 @@ public:
   Room(int type_) : type{type_} {
     block_.loadFromFile("images/block.png");
     scene_.loadFromFile("images/back.png");
+    nextDoor_.loadFromFile("images/nextDoor.png");
+    death_.loadFromFile("images/dead.png");
+
+    death.setTexture(death_);
     block.setTexture(block_);
     scene.setTexture(scene_);
+    nextDoor.setTexture(nextDoor_);
+
     buffer1.loadFromFile("Sound effect/button press.wav");
     buffer2.loadFromFile("Sound effect/小怪死亡1.wav");
     buffer3.loadFromFile("Sound effect/子弹发射.wav");
     buffer4.loadFromFile("Sound effect/子弹消失.wav");
     buffer5.loadFromFile("Sound effect/怪物子弹.wav");
     buffer6.loadFromFile("Sound effect/道具效果1.wav");
+
     press.setBuffer(buffer1);
     mdeath.setBuffer(buffer2);
     bullet_t.setBuffer(buffer3);
     bullet_f.setBuffer(buffer4);
     mbullet.setBuffer(buffer5);
     item1.setBuffer(buffer6);
+
     press.setVolume(120);
     mdeath.setVolume(120);
     bullet_t.setVolume(120);
     bullet_f.setVolume(120);
     mbullet.setVolume(120);
     item1.setVolume(120);
+
     if (0 == type) {
       for (int i = 0; i < 7; i++) {
         barrier.push_back(sf::Vector2f{325, 250});
@@ -80,17 +85,18 @@ public:
       // 障碍物位置存储到barrier
     } else if (1 == type) {
       // boss房间
-      // 障碍物位置存储到barrier
     } else if (2 == type) {
       // 道具房间
-      // 障碍物位置存储到barrier
     }
   }
 
   //打印房间
   void print_back() {
     roomMutex.lock();
-    window.draw(scene);
+    if (nEnemy)
+      window.draw(scene);
+    else if (!nEnemy)
+      window.draw(nextDoor);
     // 障碍物
     for (int i = 0; i < barrier.size() && 3 != type; i++) {
       block.setPosition(barrier[i].x, barrier[i].y);
@@ -98,7 +104,7 @@ public:
     }
     if (3 == type) {
       // 宝箱房直接画出宝箱(多个)
-    } else if (isOpen) {
+    } else if (!nEnemy) {
       // 房间开门后在窗口上画出宝箱
     }
     roomMutex.unlock();
@@ -106,6 +112,10 @@ public:
 
   //打印主角+小怪
   void print_game() {
+    sf::Font font;
+    font.loadFromFile("images/ZYKai_C.ttf");
+    sf::Text textHP("HP:", font, 20), textPR("DEbug make me crazy", font, 20);
+
     std::vector<Sprite> enemySprite{};
 
     nEnemy = 6;
@@ -187,9 +197,23 @@ public:
             sf::Vector2f mouse{sf::Mouse::getPosition(window)}; //装填弹药
             b1.setDirection(mouse, h1, (h1.dir % 2) * HPIC * HORI);
             b1.setFire(false); //火炮冷却
+            bullet_t.play();
           }
         }
       }
+      // 新加
+      int p1 = 1, p2 = 2, p3 = 3, p4 = 4, p5 = 5;
+
+      textHP.setString("HP: " + std::to_string(h1.HP));
+      textHP.setPosition(1, 1);
+      textPR.setString("   Full Heal  " + std::to_string(p1) + "   Part Heal " +
+                       std::to_string(p2) + "   Bomb " + std::to_string(p3) +
+                       "   Lv UP:" + std::to_string(p4) +
+                       "   Time Pause:" + std::to_string(p5));
+      textPR.setPosition(1, 40);
+      // text.setFillColor(sf::Color::Red);
+      textHP.setStyle(sf::Text::Bold);
+      textPR.setStyle(sf::Text::Bold);
 
       //人物碰撞边框+打印
       t.loadFromFile(h1.getTexture());
@@ -221,7 +245,10 @@ public:
       for (int i = 0; i < enemy.size(); i++) {
         if (enemy[i].getExist()) {
           if (checkCollision(enemySprite[i], s4)) {
-            h1.beHitted(enemy[i].getDamge());
+            if (dmTime > dmdelay) {
+              h1.beHitted(enemy[i].getDamge());
+              dmTime = 0;
+            }
           }
         }
       }
@@ -239,8 +266,7 @@ public:
           for (int j = 0; j < barrier.size(); j++) {
             block.setPosition(barrier[j]);
 
-            if (checkCollision(s, block) ||
-                b1.bullets[i].getCoord().x < 50 ||
+            if (checkCollision(s, block) || b1.bullets[i].getCoord().x < 50 ||
                 b1.bullets[i].getCoord().x > 1350 ||
                 b1.bullets[i].getCoord().y < 50 ||
                 b1.bullets[i].getCoord().y > 800) {
@@ -319,6 +345,21 @@ public:
         }
       }
 
+      // 新加
+      window.draw(textHP);
+      window.draw(textPR);
+      if (!h1.isLive) {
+        gameMusic.stop();
+        SoundBuffer bf;
+        bf.loadFromFile("Sound effect/death1.wav");
+        Sound dead(bf);
+        dead.play();
+        window.draw(death);
+        window.display();
+        window.clear();
+        Sleep(5000);
+        break;
+      }
       // 打印到屏幕上
       window.display();
       window.clear();
@@ -331,7 +372,8 @@ public:
       else
         sleep(milliseconds(5));
 
-      if (!nEnemy) {
+      if (!nEnemy && h1.x > 650 && h1.x < 760 && h1.y < 80) {
+        gameMusic.stop();
         break;
       }
     }
@@ -357,6 +399,7 @@ int menu() {
   window.draw(mainMenu);
 
   Event mouse;
+  menuMusic.play();
 
   while (window.isOpen()) {
     if (window.pollEvent(mouse)) // 检查是否有事件发生
@@ -385,8 +428,10 @@ int menu() {
                                                    // 开始
         if (mouse.mouseButton.x > 600 && mouse.mouseButton.x < 792 &&
             mouse.mouseButton.y > 336 && mouse.mouseButton.y < 432 &&
-            mouse.mouseButton.button == Mouse::Button::Left)
+            mouse.mouseButton.button == Mouse::Button::Left) {
+          menuMusic.stop();
           return 1;
+        }
         // 设置
         else if (mouse.mouseButton.x > 600 && mouse.mouseButton.x < 816 &&
                  mouse.mouseButton.y > 504 && mouse.mouseButton.y < 600 &&
@@ -481,14 +526,13 @@ int main() {
   menuMusic.setLoop(true);
   gameMusic.setLoop(true);
   bossMusic.setLoop(true);
+  menuMusic.setVolume(20);
+  gameMusic.setVolume(20);
+  bossMusic.setVolume(20);
 
   // 播放菜单音乐
-  menuMusic.play();
-
-  menu();
 
   // 关闭菜单音乐，播放游戏音乐
-  menuMusic.stop();
 
   // 射击线程
   Thread shootThread2{&Weapon::shoot_mouse, &b1};
@@ -498,32 +542,40 @@ int main() {
   Thread enemyThread3{&Enemy::enemyMove, &enemy[3]};
   Thread enemyThread4{&Enemy::enemyMove, &enemy[4]};
   Thread enemyThread5{&Enemy::enemyMove, &enemy[5]};
-  shootThread2.launch();
-  for (int i = 0; i < 3; i++) {
-    gameMusic.play();
+  while (menu()) {
+    shootThread2.launch();
+    for (int i = 0; i < 3; i++) {
+      gameMusic.play();
 
-    Room room1{0};
-    //线程开启
-    enemyThread0.launch();
-    enemyThread1.launch();
-    enemyThread2.launch();
-    enemyThread3.launch();
-    enemyThread4.launch();
-    enemyThread5.launch();
-    //操作
-    room1.print_game();
-    gameMusic.stop();
-    //线程终止
-    enemyThread0.terminate();
-    enemyThread1.terminate();
-    enemyThread2.terminate();
-    enemyThread3.terminate();
-    enemyThread4.terminate();
-    enemyThread5.terminate();
-    for (int i = 0; i < 6; i++) {
-      enemy[i].launch();
-      enemy[i].ebullets.clear();
+      h1.x = 720;
+      h1.y = 700;
+
+      Room room1{i};
+      //线程开启
+      enemyThread0.launch();
+      enemyThread1.launch();
+      enemyThread2.launch();
+      enemyThread3.launch();
+      enemyThread4.launch();
+      enemyThread5.launch();
+      //操作
+      room1.print_game();
+      //线程终止
+      enemyThread0.terminate();
+      enemyThread1.terminate();
+      enemyThread2.terminate();
+      enemyThread3.terminate();
+      enemyThread4.terminate();
+      enemyThread5.terminate();
+      for (int i = 0; i < 6; i++) {
+        enemy[i].launch();
+        enemy[i].ebullets.clear();
+      }
+      if (!h1.isLive) {
+        break;
+      }
     }
+    shootThread2.terminate();
   }
 
   return 0;
