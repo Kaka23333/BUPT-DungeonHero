@@ -32,20 +32,18 @@ public:
     block.setTexture(block_);
     scene.setTexture(scene_);
     if (0 == type) {
-      for (int i = 0; i < 7; i++) {
-        barrier.push_back(sf::Vector2f{325, 250});
-        barrier.push_back(sf::Vector2f{410, 250});
-        barrier.push_back(sf::Vector2f{325, 330});
-        barrier.push_back(sf::Vector2f{950, 250});
-        barrier.push_back(sf::Vector2f{1030, 250});
-        barrier.push_back(sf::Vector2f{1030, 330});
-        barrier.push_back(sf::Vector2f{325, 560});
-        barrier.push_back(sf::Vector2f{325, 640});
-        barrier.push_back(sf::Vector2f{410, 635});
-        barrier.push_back(sf::Vector2f{1030, 560});
-        barrier.push_back(sf::Vector2f{1030, 640});
-        barrier.push_back(sf::Vector2f{950, 640});
-      }
+      barrier.push_back(sf::Vector2f{324, 247});
+      barrier.push_back(sf::Vector2f{408, 247});
+      barrier.push_back(sf::Vector2f{324, 327});
+      barrier.push_back(sf::Vector2f{949, 247});
+      barrier.push_back(sf::Vector2f{1033, 247});
+      barrier.push_back(sf::Vector2f{1030, 327});
+      barrier.push_back(sf::Vector2f{324, 560});
+      barrier.push_back(sf::Vector2f{324, 634});
+      barrier.push_back(sf::Vector2f{408, 635});
+      barrier.push_back(sf::Vector2f{1033, 560});
+      barrier.push_back(sf::Vector2f{1033, 634});
+      barrier.push_back(sf::Vector2f{949, 634});
       // 普通房间
       // 障碍物位置存储到barrier
     } else if (1 == type) {
@@ -63,8 +61,8 @@ public:
     window.draw(scene);
     // 障碍物
     for (int i = 0; i < barrier.size() && 3 != type; i++) {
-      // block.setPosition(barrier[i].x, barrier[i].y);
-      // window.draw(block);
+      block.setPosition(barrier[i].x, barrier[i].y);
+      window.draw(block);
     }
     if (3 == type) {
       // 宝箱房直接画出宝箱(多个)
@@ -78,6 +76,10 @@ public:
 
 // 菜单界面
 int menu() {
+  SoundBuffer buffer1;
+  buffer1.loadFromFile("Sound effect/button press.wav");
+  Sound press(buffer1);
+
   // 创建纹理对象
   Texture mainMenu_, start_, setting_, help_, exit_, basicHelp_, menuSetting_;
   // 初始化纹理
@@ -102,20 +104,28 @@ int menu() {
       if (mouse.type == Event::MouseMoved) // 鼠标碰到按钮
         // 开始
         if (mouse.mouseMove.x > 600 && mouse.mouseMove.x < 792 &&
-            mouse.mouseMove.y > 336 && mouse.mouseMove.y < 432)
+            mouse.mouseMove.y > 336 && mouse.mouseMove.y < 432) {
           window.draw(start);
+          press.play();
+        }
         // 设置
         else if (mouse.mouseMove.x > 600 && mouse.mouseMove.x < 816 &&
-                 mouse.mouseMove.y > 504 && mouse.mouseMove.y < 600)
+                 mouse.mouseMove.y > 504 && mouse.mouseMove.y < 600) {
           window.draw(setting);
+          press.play();
+        }
         // 帮助
         else if (mouse.mouseMove.x > 600 && mouse.mouseMove.x < 816 &&
-                 mouse.mouseMove.y > 672 && mouse.mouseMove.y < 768)
+                 mouse.mouseMove.y > 672 && mouse.mouseMove.y < 768) {
           window.draw(help);
+          press.play();
+        }
         // 退出
         else if (mouse.mouseMove.x > 600 && mouse.mouseMove.x < 816 &&
-                 mouse.mouseMove.y > 840 && mouse.mouseMove.y < 912)
+                 mouse.mouseMove.y > 840 && mouse.mouseMove.y < 912) {
           window.draw(exit);
+          press.play();
+        }
         // 没有碰到按钮
         else
           window.draw(mainMenu);
@@ -123,13 +133,16 @@ int menu() {
         // 开始
         if (mouse.mouseButton.x > 600 && mouse.mouseButton.x < 792 &&
             mouse.mouseButton.y > 336 && mouse.mouseButton.y < 432 &&
-            mouse.mouseButton.button == Mouse::Button::Left)
+            mouse.mouseButton.button == Mouse::Button::Left) {
+          press.play();
           return 1;
+        }
         // 设置
         else if (mouse.mouseButton.x > 600 && mouse.mouseButton.x < 816 &&
                  mouse.mouseButton.y > 504 && mouse.mouseButton.y < 600 &&
                  mouse.mouseButton.button == Mouse::Button::Left) {
           window.draw(menuSetting);
+          press.play();
           Event change;
           while (window.isOpen()) {
             if (window.pollEvent(change)) {
@@ -194,14 +207,17 @@ int menu() {
                  mouse.mouseButton.y > 672 && mouse.mouseButton.y < 768 &&
                  mouse.mouseButton.button == Mouse::Button::Left) {
           window.draw(basicHelp);
+          press.play();
           window.display();
           Sleep(2000);
         }
         // 退出
         else if (mouse.mouseButton.x > 600 && mouse.mouseButton.x < 8167 &&
                  mouse.mouseButton.y > 840 && mouse.mouseButton.y < 912 &&
-                 mouse.mouseButton.button == Mouse::Button::Left)
+                 mouse.mouseButton.button == Mouse::Button::Left) {
+          press.play();
           std::exit(0);
+        }
       // 显示所画的图片
       window.display();
     }
@@ -225,13 +241,24 @@ int main() {
 
   // 音乐初始化
   Music menuMusic, gameMusic, bossMusic;
+  SoundBuffer buffer1, buffer2, buffer3, buffer4, buffer5, buffer6;
+  buffer1.loadFromFile("Sound effect/button press.wav");
+  buffer2.loadFromFile("Sound effect/小怪死亡1.wav");
+  buffer3.loadFromFile("Sound effect/子弹发射.wav");
+  buffer4.loadFromFile("Sound effect/子弹消失.wav");
+  buffer5.loadFromFile("Sound effect/怪物子弹.wav");
+  buffer6.loadFromFile("Sound effect/道具效果1.wav");
   menuMusic.openFromFile("music/menu.wav");
   gameMusic.openFromFile("music/game.wav");
   bossMusic.openFromFile("music/Boss.wav");
   menuMusic.setLoop(true);
   gameMusic.setLoop(true);
   bossMusic.setLoop(true);
-
+  Sound press(buffer1), mdeath(buffer2), bullet_t(buffer3), bullet_f(buffer4),
+      mbullet(buffer5), item1(buffer6);
+  menuMusic.setVolume(20);
+  gameMusic.setVolume(20);
+  bossMusic.setVolume(20);
   // 播放菜单音乐
   menuMusic.play();
 
@@ -245,7 +272,7 @@ int main() {
   std::vector<Enemy> enemy{1, 1, 2};
   std::vector<Sprite> enemySprite{};
 
-  Hero h1{200, 200};
+  Hero h1{720, 480};
   Weapon b1;
 
   // 射击线程
@@ -327,8 +354,8 @@ int main() {
         {                                            //上0下1左2右三
           sf::Vector2f mouse{sf::Mouse::getPosition(window)}; //装填弹药
           b1.setDirection(mouse, h1, (h1.dir % 2) * HPIC * HORI);
-          bulletMutex.unlock();
           b1.setFire(false); //火炮冷却
+          bullet_t.play();
         }
       }
     }
@@ -344,14 +371,17 @@ int main() {
       int temp[2]{h1.x, h1.y};
       h1.update(); //逻辑移动
 
-      // for (int i = 0; i < room.barrier.size(); i++) {
-      //检测与障碍物碰撞，没写完，少边框位置
-      // room.block.setPosition(room.barrier[i]);
-      if (h1.x < 50 || h1.x > 1350 || h1.y < 50 || h1.y > 700) {
-        h1.x = temp[0];
-        h1.y = temp[1];
+      for (int i = 0; i < room.barrier.size(); i++) {
+        //检测与障碍物碰撞
+        room.block.setPosition(room.barrier[i]);
+        s4.setPosition(h1.getCoord());
+        if (checkCollision(room.block, s4) || h1.x < 50 || h1.x > 1350 ||
+            h1.y < 50 || h1.y > 700) {
+          h1.x = temp[0];
+          h1.y = temp[1];
+          break;
+        }
       }
-      //}
       s4.setPosition(h1.getCoord());
     }
     window.draw(s4);
@@ -368,25 +398,32 @@ int main() {
     t.loadFromFile(b1.getTexture());
     s.setTexture(t);
     for (int i = 0; b1.bullets.size() > i; i++) {
-
       //子弹存在
       if (b1.bullets[i].getExist()) {
         s.setPosition(b1.bullets[i].getCoord());
 
         //检测与边框碰撞
-        if (b1.bullets[i].getCoord().x < 50 ||
-            b1.bullets[i].getCoord().x > 1350 ||
-            b1.bullets[i].getCoord().y < 50 ||
-            b1.bullets[i].getCoord().y > 800) {
-          b1.bullets[i].setExist(false);
-          break;
+        for (int j = 0; j < room.barrier.size(); j++) {
+          room.block.setPosition(room.barrier[j]);
+
+          if (checkCollision(s, room.block) ||
+              b1.bullets[i].getCoord().x < 50 ||
+              b1.bullets[i].getCoord().x > 1350 ||
+              b1.bullets[i].getCoord().y < 50 ||
+              b1.bullets[i].getCoord().y > 800) {
+            b1.bullets[i].setExist(false);
+            bullet_f.play();
+            break;
+          }
         }
         //检测打击怪物
         for (int j = 0; j < enemy.size(); j++) {
           if (enemy[j].getExist()) {
             if (checkCollision(enemySprite[j], s)) {
-              enemy[j].beHitted(b1.getDamage()*20);
+              enemy[j].beHitted(b1.getDamage() * 20);
               b1.bullets[i].setExist(false);
+              bullet_f.play();
+              mdeath.play();
               break;
             }
           }
@@ -402,23 +439,28 @@ int main() {
     t.loadFromFile("images/bullet4.png");
     ebullet.setTexture(t);
     for (int i = 0; i < enemy.size(); i++) {
-      if (enemy[i].getShoot()&&enemy[i].getExist()) {
+      if (enemy[i].getShoot() && enemy[i].getExist()) {
 
         for (int j = 0; j < enemy[i].ebullets.size(); j++) {
           if (enemy[i].ebullets[j].getExist()) {
             ebullet.setPosition(enemy[i].ebullets[j].getCoord());
 
             //检测与障碍物碰撞，没写完，少边框位置
-            if (enemy[i].ebullets[j].getCoord().x < 50 ||
-                enemy[i].ebullets[j].getCoord().x > 1350 ||
-                enemy[i].ebullets[j].getCoord().y < 50 ||
-                enemy[i].ebullets[j].getCoord().y > 800) {
-              enemy[i].ebullets[j].setExist(false);
+            for (int k = 0; k < room.barrier.size(); k++) {
+              room.block.setPosition(room.barrier[k]);
+              if (checkCollision(room.block,ebullet)||enemy[i].ebullets[j].getCoord().x < 50 ||
+                  enemy[i].ebullets[j].getCoord().x > 1350 ||
+                  enemy[i].ebullets[j].getCoord().y < 50 ||
+                  enemy[i].ebullets[j].getCoord().y > 800) {
+                enemy[i].ebullets[j].setExist(false);
+                bullet_f.play();
+              }
             }
             //检测与人物碰撞
             if (checkCollision(ebullet, s4)) {
               h1.beHitted(enemy[i].ebullets[j].damage);
               enemy[i].ebullets[j].setExist(false);
+              bullet_f.play();
             }
 
             if (enemy[i].ebullets[j].getExist()) {
