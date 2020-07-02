@@ -44,6 +44,7 @@ public:
 
   bool getFire() { return isFire; }
   int getDamage() { return damage; }
+  void setDamage(int damage_) { damage = damage_; }
   std::string getTexture() { return bullet; }
 
   std::deque<Bullet> bullets{}; //×Óµ¯
