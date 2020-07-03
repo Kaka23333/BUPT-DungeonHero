@@ -37,7 +37,6 @@ public:
     Weapon();
     void check();
     void shoot_mouse();
-    void shoot_key();
 
     void setDirection(sf::Vector2f, Hero&, const float delta);
     void setFire(bool isFire_) { isFire = isFire; }
